@@ -1,9 +1,9 @@
-int inputPin = D2;              // PIRセンサーのピン番号
-int ledPin = D7;                // LEDのピン番号
-int pirState = LOW;             // モーションが検出されていない状態を初期値とする
-int val = 0;                    // ピンの状態を読み取るための変数
+int inputPin = D2;              // PIR Sensor PIN number
+int ledPin = D7;                // LED PIN number
+int pirState = LOW;             // The initial value is the state in which no motion is detected.
+int val = 0;                    // Variables for reading the pin status.
 
-int calibrateTime = 10000;      // センサーのキャリブレーションにかかる時間（ミリ秒）
+int calibrateTime = 10000;      // Time taken to calibrate the sensor (milliseconds)
 
 void setup()
 {
@@ -30,14 +30,14 @@ bool calibrated() {
 void reportTheData() {
   if (val == HIGH) {
     if (pirState == LOW) {
-      // センサーが動作状態に変化した場合のみ処理を実行
+      // Processing is only performed if the sensor changes to an operational state.
       Particle.publish("designingiot/s19/motion");
       pirState = HIGH;
       setLED(pirState);
     }
   } else {
     if (pirState == HIGH) {
-      // センサーが非動作状態に変化した場合のみ処理を実行
+      // Processing is only performed if the sensor changes to a non-operational state.
       pirState = LOW;
       setLED(pirState);
     }
