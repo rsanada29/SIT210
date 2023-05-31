@@ -1,0 +1,41 @@
+#include <Wire.h>
+#include <BH1750.h>
+
+BH1750 lightSensor;
+int ledPin = D7;       // LED PIN number
+int pirPin = D2;       // PIR Sensor PIN number
+
+void setup() {
+  Wire.begin();
+  lightSensor.begin();
+  pinMode(ledPin, OUTPUT);
+  pinMode(pirPin, INPUT);
+  Serial.begin(9600);
+  turnOffLED();
+  delay(3000);
+}
+
+void loop() {
+  float lightIntensity = lightSensor.get_light_level();
+  bool isMotionDetected = digitalRead(pirPin) == HIGH;
+  
+  if (isRoomDark(lightIntensity) && isMotionDetected) {
+    turnOnLED();
+  } else {
+    turnOffLED();
+  }
+  
+  delay(1000);
+}
+
+bool isRoomDark(float lightIntensity) {
+  return lightIntensity <= 20;  // Adjust this threshold based on your environment
+}
+
+void turnOnLED() {
+  digitalWrite(ledPin, HIGH);
+}
+
+void turnOffLED() {
+  digitalWrite(ledPin, LOW);
+}
