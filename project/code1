@@ -1,50 +1,44 @@
-int inputPin = D2;              // PIR Sensor PIN number
-int ledPin = D7;                // LED PIN number
-int pirState = LOW;             // The initial value is the state in which no motion is detected.
-int val = 0;                    // Variables for reading the pin status.
+#include <Wire.h>
+#include <BH1750.h>
 
-int calibrateTime = 10000;      // Time taken to calibrate the sensor (milliseconds)
+BH1750 lightSensor;
+int ledPin = D7;       // LED PIN number
+int pirPin = D2;       // PIR Sensor PIN number
 
-void setup()
-{
+void setup() {
+  Wire.begin();
+  lightSensor.begin();
   pinMode(ledPin, OUTPUT);
-  pinMode(inputPin, INPUT);
+  pinMode(pirPin, INPUT);
+  Serial.begin(9600);
+  turnOffLED();
+  delay(3000);
 }
 
-void loop()
-{
-  if (calibrated()) {
-    readTheSensor();
-    reportTheData();
-  }
-}
-
-void readTheSensor() {
-  val = digitalRead(inputPin);
-}
-
-bool calibrated() {
-  return millis() - calibrateTime > 0;
-}
-
-void reportTheData() {
-  if (val == HIGH) {
-    if (pirState == LOW) {
-      // Processing is only performed if the sensor changes to an operational state.
-      Particle.publish("designingiot/s19/motion");
-      pirState = HIGH;
-      setLED(pirState);
-    }
+void loop() {
+  float lightIntensity = lightSensor.get_light_level();
+  bool isMotionDetected = digitalRead(pirPin) == HIGH;
+  
+  Serial.print("Light Intensity: ");
+  Serial.print(lightIntensity);
+  Serial.println(" lx");
+  
+  if (isRoomDark(lightIntensity) && isMotionDetected) {
+    turnOnLED();
   } else {
-    if (pirState == HIGH) {
-      // Processing is only performed if the sensor changes to a non-operational state.
-      pirState = LOW;
-      setLED(pirState);
-    }
+    turnOffLED();
   }
+  
+  delay(1000);
 }
 
-
-void setLED(int state) {
-  digitalWrite(ledPin, state);
+bool isRoomDark(float lightIntensity) {
+  return lightIntensity <= 950;  
 }
+
+void turnOnLED() {
+  digitalWrite(ledPin, HIGH);
+}
+
+void turnOffLED() {
+  digitalWrite(ledPin, LOW);
